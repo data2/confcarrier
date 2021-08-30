@@ -40,6 +40,7 @@ type Record struct {
 const (
 	SUCCESS = 0
 	FAIL    = 1
+	UNAUTH  = 2
 )
 const (
 	GET    = "get"
@@ -47,8 +48,6 @@ const (
 	SET    = "set"
 	DEL    = "del"
 	DELALL = "delall"
-	REGIST   = "regist"
-	AUTH   = "auth"
 	NOTIFY = "notify"
 )
 
@@ -99,10 +98,10 @@ func handlerClient(db *gorm.DB, conn *net.TCPConn) {
 			continue
 		}
 
-		notValid := NotValidCheck(conn,info[2])
-		if notValid {
+		ok := ValidCheck(conn, info[0], info[1])
+		if !ok {
 			Response{
-				Code: FAIL,Message: "not valid request, pleast regist your client. ",
+				Code: UNAUTH, Message: "not valid request, pleast regist your client. ",
 			}.Response(conn, info[2])
 			continue
 		}
@@ -130,17 +129,11 @@ func handlerClient(db *gorm.DB, conn *net.TCPConn) {
 			DelData(db, namespace, info[3]).Response(conn, info[2])
 		case DELALL:
 			DelAllData(db, namespace).Response(conn, info[2])
-		case REGIST:
-			if len(info) != 3 {
-				Response{Code: FAIL, Message: "req param valid, get must contain namespace|token|action"}.Response(conn, info[2])
-				continue
-			}
-			RegistClient(conn, namespace, info[1]).Response(conn, info[2])
 		}
 	}
 }
 
-func RegistClient(conn *net.TCPConn, namespace string, token string) Response {
+func RegistClient(conn *net.TCPConn, namespace string, token string) bool {
 	bol := AuthToken(namespace, token)
 	if bol {
 		 clientMeta.Store(conn, ConnMeta{
@@ -148,14 +141,14 @@ func RegistClient(conn *net.TCPConn, namespace string, token string) Response {
 		 	AuthOkToken: token,
 		 	Namespace: namespace,
 		 })
-		 push(conn,namespace)
-		 return Response{Code: SUCCESS,Message: "client regist success."}
+		 push(namespace,conn)
+		 return true
 	}else {
-		return Response{Code: FAIL, Message: "client regist auth fail."}
+		return false
 	}
 }
 
-func push(conn *net.TCPConn, namespace string) {
+func push( namespace string, conn *net.TCPConn) {
 	defer queueMu.Unlock()
 	queueMu.Lock()
 	val,_ := pushQueue.Load(namespace)
@@ -182,17 +175,12 @@ func AuthToken(namespace string, token string) bool {
 	}
 }
 
-func NotValidCheck(conn *net.TCPConn, action string) bool {
-	if action == REGIST{
-		return false
-	}
+func ValidCheck(conn *net.TCPConn, namespace string, token string) bool {
 	value,_:= clientMeta.Load(conn)
-	connMeta := value.(ConnMeta)
-	if len(connMeta.AuthOkToken) != 0 {
-		return false
+	if value == nil{
+		return RegistClient(conn,namespace, token)
 	}
-	return true
-
+	return value.(ConnMeta).AuthOkToken == token
 }
 
 func DelData(db *gorm.DB, namespace string, path string) Response {
