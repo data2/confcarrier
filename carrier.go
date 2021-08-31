@@ -405,7 +405,7 @@ func HttpDelAll(w http.ResponseWriter, r *http.Request) {
 func broadcastExiting() {
 	clientMeta.Range(func(key, value interface{}) bool {
 		c := key.(*net.TCPConn)
-		c.Write([]byte("config carrier exiting..."))
+		c.Write([]byte("confcarrier exiting..."))
 		c.Close()
 		return true
 	})
@@ -415,7 +415,7 @@ var db *gorm.DB
 
 func main() {
 	fmt.Println("----------------------------------------------------")
-	fmt.Println("config-carrier starting...")
+	fmt.Println("confcarrier starting...")
 	port := "8081"
 	//port := os.Args[1]
 	fmt.Println("output param loading")
