@@ -1,6 +1,7 @@
 # confcarrier
 
 [![License](http://img.shields.io/:license-apache-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
+[![Build Status](https://travis-ci.org/data2/confcarrier.svg?branch=master)](https://travis-ci.org/data2/confcarrier)
 
 GO版本分布式配置中心，支持端到端的实时通信进行配置操作，同时具备后台页面管理的功能，并能对监听指定命名空间下的配置的客户端进行消息广播通知，类似于热更新。
 
