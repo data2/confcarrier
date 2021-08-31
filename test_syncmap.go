@@ -11,7 +11,8 @@ type Product struct {
 type Price struct {
 	Money int
 }
-func main()  {
+
+func main() {
 	var m sync.Map
 	var p = Product{
 		Name: "111",
@@ -21,7 +22,7 @@ func main()  {
 	}
 	m.Store(p, price)
 
-	val ,_ := m.Load(p)
+	val, _ := m.Load(p)
 
 	fmt.Println(val.(Price).Money)
 
