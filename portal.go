@@ -9,29 +9,27 @@ import (
 	"time"
 )
 
+var httpDb *gorm.DB
+var httpRdb *redis.Client
+
 func HttpGet(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	namespace := parseParam(r, "namespace")
 	path := parseParam(r, "path")
 
-	if len(namespace) == 0 || len(path) == 0 {
-		w.Write([]byte(ToJsonString(Response{
-			Code: FAIL,
-			Data: "param must give",
-		})))
-		return
-	} else if res := LoadData(httpDb, namespace, path); res.Code != SUCCESS {
-		w.Write([]byte(ToJsonString(Response{
-			Code: FAIL,
-			Data: res.Message,
-		})))
-		return
-	} else {
-		w.Write([]byte(ToJsonString(Response{
-			Code: SUCCESS,
-			Data: res.Data,
-		})))
+	response := Response{
+		Code:   FAIL,
+		Action: GET,
 	}
+	if len(namespace) == 0 || len(path) == 0 {
+		response.Message = "param must give"
+	} else if res := LoadData(httpDb, namespace, path); res.Code != SUCCESS {
+		response.Message = res.Message
+	} else {
+		response.Code = SUCCESS
+		response.Data = res.Data
+	}
+	w.Write([]byte(ToJsonString(response)))
 }
 
 func parseParam(r *http.Request, key string) string {
@@ -50,25 +48,21 @@ func HttpGetAll(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	namespace := parseParam(r, "namespace")
 
+	response := Response{
+		Code:   FAIL,
+		Action: GETALL,
+	}
 	if len(namespace) == 0 {
-		w.Write([]byte(ToJsonString(Response{
-			Code: FAIL,
-			Data: "param must give",
-		})))
-		return
+		response.Message = "param must give"
 	}
 	if res := LoadAllData(httpDb, namespace); res.Code != SUCCESS {
-		w.Write([]byte(ToJsonString(Response{
-			Code: FAIL,
-			Data: res.Message,
-		})))
-		return
+		response.Message = res.Message
 	} else {
-		w.Write([]byte(ToJsonString(Response{
-			Code: SUCCESS,
-			Data: res.Data,
-		})))
+		response.Code = SUCCESS
+		response.Data = res.Data
 	}
+	w.Write([]byte(ToJsonString(response)))
+
 }
 
 func HttpSet(w http.ResponseWriter, r *http.Request) {
@@ -77,35 +71,24 @@ func HttpSet(w http.ResponseWriter, r *http.Request) {
 	path := parseParam(r, "path")
 	value := parseParam(r, "value")
 
+	response := Response{
+		Code:   FAIL,
+		Action: SET,
+	}
 	if len(namespace) == 0 || len(path) == 0 || len(value) == 0 {
-		w.Write([]byte(ToJsonString(Response{
-			Code: FAIL,
-			Data: "param must give",
-		})))
-		return
+		response.Message = "param must give"
 	}
 	if res := SetData(httpDb, namespace, path, value); res.Code != SUCCESS {
-		w.Write([]byte(ToJsonString(Response{
-			Code: FAIL,
-			Data: res.Message,
-		})))
-		return
+		response.Message = res.Message
 	} else {
-		w.Write([]byte(ToJsonString(Response{
-			Code: SUCCESS,
-		})))
-		go PublishMessage(httpRdb, Record{Namespace: namespace, Path: path, Value: value})
+		response.Code = SUCCESS
+		response.Data = res.Data
 	}
-}
-
-func BroadcastUpdate(namespace string, path string, value string) {
-	//val, _ := pushQueue.Load(namespace)
-	//for ele := val.(*list.List).Front(); ele != nil; ele = ele.Next() {
-	//	Response{
-	//		Code: SUCCESS, Data: Record{Namespace: namespace, Path: path, Value: value},
-	//	}.Response(ele.Value.(*net.TCPConn), NOTIFY)
-	//}
-
+	w.Write([]byte(ToJsonString(response)))
+	fmt.Println(response)
+	if response.Code == SUCCESS && response.Data != (Record{}) {
+		go PublishMessage(httpRdb, response.Data.(Record))
+	}
 }
 
 func HttpDel(w http.ResponseWriter, r *http.Request) {
@@ -113,48 +96,38 @@ func HttpDel(w http.ResponseWriter, r *http.Request) {
 	namespace := parseParam(r, "namespace")
 	path := parseParam(r, "path")
 
+	response := Response{
+		Code:   FAIL,
+		Action: DEL,
+	}
 	if len(namespace) == 0 || len(path) == 0 {
-		w.Write([]byte(ToJsonString(Response{
-			Code: FAIL,
-			Data: "param must give",
-		})))
-		return
+		response.Message = "param must give"
 	}
 	if res := DelData(httpDb, namespace, path); res.Code != SUCCESS {
-		w.Write([]byte(ToJsonString(Response{
-			Code: FAIL,
-			Data: res.Message,
-		})))
-		return
+		response.Message = res.Message
 	} else {
-		w.Write([]byte(ToJsonString(Response{
-			Code: SUCCESS,
-		})))
+		response.Code = SUCCESS
 	}
+	w.Write([]byte(ToJsonString(response)))
 }
 
 func HttpDelAll(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	namespace := parseParam(r, "namespace")
 
+	response := Response{
+		Code:   FAIL,
+		Action: DELALL,
+	}
 	if len(namespace) == 0 {
-		w.Write([]byte(ToJsonString(Response{
-			Code: FAIL,
-			Data: "param must give",
-		})))
-		return
+		response.Message = "param must give"
 	}
 	if res := DelAllData(httpDb, namespace); res.Code != SUCCESS {
-		w.Write([]byte(ToJsonString(Response{
-			Code: FAIL,
-			Data: res.Message,
-		})))
-		return
+		response.Message = res.Message
 	} else {
-		w.Write([]byte(ToJsonString(Response{
-			Code: SUCCESS,
-		})))
+		response.Code = SUCCESS
 	}
+	w.Write([]byte(ToJsonString(response)))
 }
 
 func HttpServer(httpPort string) {
@@ -170,16 +143,13 @@ func HttpServer(httpPort string) {
 	}
 }
 
-var httpDb *gorm.DB
-var httpRdb *redis.Client
-
 func main() {
 	fmt.Println("----------------------------------------------------")
 	fmt.Println("confcarrier-portal starting...")
 
 	//dsn := os.Args[2]
 	dsn := "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8mb4&parseTime=True&loc=Local"
-	httpDb, err := gorm.Open(mysql.New(mysql.Config{
+	httpDb, _ = gorm.Open(mysql.New(mysql.Config{
 		DSN:                       dsn,   // DSN data source name
 		DefaultStringSize:         256,   // string 类型字段的默认长度
 		DisableDatetimePrecision:  true,  // 禁用 datetime 精度，MySQL 5.6 之前的数据库不支持
@@ -187,10 +157,10 @@ func main() {
 		DontSupportRenameColumn:   true,  // 用 `change` 重命名列，MySQL 8 之前的数据库和 MariaDB 不支持重命名列
 		SkipInitializeWithVersion: false, // 根据当前 MySQL 版本自动配置
 	}), &gorm.Config{})
-	if err != nil {
-		fmt.Println(fmt.Sprintf("mysql server connect error : %s", err))
-		return
-	}
+	//if err != nil {
+	//	fmt.Println(fmt.Sprintf("mysql server connect error : %s", err))
+	//	return
+	//}
 	fmt.Println("mysql server connected!")
 
 	httpDb.AutoMigrate(&Record{})
@@ -208,18 +178,17 @@ func main() {
 	httpRdb = redis.NewClient(&redis.Options{
 		Addr: redisAddr,
 	})
-	pong ,err:= httpRdb.Ping().Result()
+	pong, err := httpRdb.Ping().Result()
 	if err != nil {
 		fmt.Println(fmt.Sprintf("redis connect error : %s", err))
 		return
 	}
 	fmt.Println("redis server connected! ping > " + pong)
 
-	httpPort := "8081"
+	httpPort := "8082"
 	//httpPort := os.Args[1]
 
-	go HttpServer(httpPort)
-	fmt.Println(fmt.Sprintf("http server started, http://localhost:%s/get", httpPort))
+	HttpServer(httpPort)
 
 	// go run portal.go 8081 "localhost:6379" "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8mb4&parseTime=True&loc=Local"
 }
