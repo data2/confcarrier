@@ -12,9 +12,9 @@ func ToJsonString(response interface{}) string {
 }
 
 func ToInterface(s string) Record {
-	record := Record{}
-	json.Unmarshal([]byte(s), &record)
-	return record
+	var r Record
+	json.Unmarshal([]byte(s), &r)
+	return r
 }
 
 func md5go(str string) string {
