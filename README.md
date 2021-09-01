@@ -15,3 +15,5 @@ GO版本分布式配置中心，支持端到端的实时通信进行配置操作
 + cache
 + make-one-server
 
+如果您是小型项目，可以使用make-one-server分支的代码，服务端和portal聚合为一个服务 https://github.com/data2/confcarrier/tree/make-one-big-server
+
