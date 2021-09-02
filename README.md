@@ -1,7 +1,7 @@
 # GO版本分布式配置中心
 
 [![License](http://img.shields.io/:license-apache-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
-[![Build Status](https://travis-ci.org/data2/confcarrier.svg?branch=master)](https://travis-ci.org/data2/confcarrier)
+[![Build Status](https://travis-ci.com/data2/confcarrier.svg?branch=master)](https://travis-ci.com/data2/confcarrier)
 
 GO版本分布式配置中心confcarrier
 + 支持端到端的实时通信，长连接减少资源损耗
