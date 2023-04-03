@@ -23,6 +23,7 @@ var clientMeta sync.Map
 var pushQueue sync.Map
 var queueMu sync.Mutex
 
+// @description delete carrier
 func RemoveCarrier(conn *net.TCPConn) {
 	clientMeta.Delete(conn)
 	pushQueue.Delete(conn)
@@ -101,9 +102,8 @@ func RegistClient(conn *net.TCPConn, namespace string, token string) bool {
 		})
 		Push(namespace, conn)
 		return true
-	} else {
-		return false
 	}
+	return false
 }
 
 func Push(namespace string, conn *net.TCPConn) {
@@ -119,12 +119,12 @@ func Push(namespace string, conn *net.TCPConn) {
 	}
 }
 
+// @description auth token
 func AuthToken(namespace string, token string) bool {
 	if token == md5go(namespace+"666") {
 		return true
-	} else {
-		return false
-	}
+	} 
+	return false
 }
 
 func ValidCheck(conn *net.TCPConn, namespace string, token string) bool {

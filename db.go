@@ -9,11 +9,17 @@ import (
 )
 
 const (
+	// @description http get
 	GET    = "get"
+	// @description http getall
 	GETALL = "getall"
+	// @description http set
 	SET    = "set"
+	// @description http del
 	DEL    = "del"
+	// @description http  delall
 	DELALL = "delall"
+	// @description http notify
 	NOTIFY = "notify"
 )
 
@@ -57,6 +63,7 @@ func DelData(db *gorm.DB, namespace string, path string) Response {
 
 var lock = sync.Mutex{}
 
+// @description set data
 func SetData(db *gorm.DB, namespace string, path string, value string) Response {
 	defer lock.Unlock()
 	lock.Lock()
@@ -99,6 +106,8 @@ func DelAllData(db *gorm.DB, namespace string) Response {
 	return Response{Code: SUCCESS}
 }
 
+
+// @description LoadAllData
 func LoadAllData(db *gorm.DB, namespace string) Response {
 	var records []Record
 	err := db.Where("namespace=?", namespace).Find(&records).Error
