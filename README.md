@@ -1,5 +1,6 @@
 # GO版本分布式配置中心
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f84ff19c18b94cba9e34a1a3eda8b8d4)](https://app.codacy.com/gh/data2/confcarrier?utm_source=github.com&utm_medium=referral&utm_content=data2/confcarrier&utm_campaign=Badge_Grade)
 [![License](http://img.shields.io/:license-apache-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 [![Build Status](https://travis-ci.com/data2/confcarrier.svg?branch=master)](https://travis-ci.com/data2/confcarrier)
 
