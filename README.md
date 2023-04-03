@@ -1,7 +1,6 @@
 # GO版本分布式配置中心
 
 [![License](http://img.shields.io/:license-apache-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/2b02fbc2fed84a3dac612c00b174cb19)](https://app.codacy.com/gh/data2/confcarrier/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Build Status](https://travis-ci.com/data2/confcarrier.svg?branch=master)](https://travis-ci.com/data2/confcarrier)
 
 GO版本分布式配置中心confcarrier
