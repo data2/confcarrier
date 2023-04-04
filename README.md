@@ -28,7 +28,7 @@ go run carrier.go  util.go db.go queue.go tcpPort  mysqlUrl redisUrl
 ```
 ### 启动客户端（分布式GO服务）
 ```
-go run carrier.go  util.go db.go queue.go tcpPort  mysqlUrl redisUrl
+go run client.go  port  
 ```
 ### 启动portal
  ```
