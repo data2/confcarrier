@@ -11,7 +11,7 @@ GO版本分布式配置中心confcarrier
 
 # architecture
 
-![confcarrier](https://user-images.githubusercontent.com/13504729/131481175-3f4f0776-79a9-4c2c-aef7-73c533c21004.png)
+![image](https://user-images.githubusercontent.com/13504729/229812964-f5d9330b-28fd-47cd-9492-856a3aa1f96a.png)
 
 # portal与confcarrier通信
 
