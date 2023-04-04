@@ -26,6 +26,10 @@ GO版本分布式配置中心confcarrier
 ```
 go run carrier.go  util.go db.go queue.go tcpPort  mysqlUrl redisUrl
 ```
+### 启动客户端（分布式GO服务）
+```
+go run carrier.go  util.go db.go queue.go tcpPort  mysqlUrl redisUrl
+```
 ### 启动portal
  ```
  go run portal.go  util.go db.go queue.go port  mysqlUrl redisUrl
