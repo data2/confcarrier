@@ -73,21 +73,21 @@ func HandlerClient(db *gorm.DB, conn *net.TCPConn) {
 				continue
 			}
 			LoadData(db, namespace, info[3]).Return(conn, info[2])
-		case SET:
-			if len(info) != 5 {
-				Response{Code: FAIL, Message: "req param valid, get must contain namespace|token|action|path|value"}.Return(conn, info[2])
-				continue
-			}
-			SetData(db, namespace, info[3], info[4]).Return(conn, info[2])
-		case DEL:
-			if len(info) != 4 {
-				Response{Code: FAIL, Message: "req param valid, get must contain namespace|token|action|path"}.Return(conn, info[2])
-				continue
-			}
-			DelData(db, namespace, info[3]).Return(conn, info[2])
-		case DELALL:
-			DelAllData(db, namespace).Return(conn, info[2])
-		}
+		// case SET:
+		// 	if len(info) != 5 {
+		// 		Response{Code: FAIL, Message: "req param valid, get must contain namespace|token|action|path|value"}.Return(conn, info[2])
+		// 		continue
+		// 	}
+		// 	SetData(db, namespace, info[3], info[4]).Return(conn, info[2])
+		// case DEL:
+		// 	if len(info) != 4 {
+		// 		Response{Code: FAIL, Message: "req param valid, get must contain namespace|token|action|path"}.Return(conn, info[2])
+		// 		continue
+		// 	}
+		// 	DelData(db, namespace, info[3]).Return(conn, info[2])
+		// case DELALL:
+		// 	DelAllData(db, namespace).Return(conn, info[2])
+		// }
 	}
 }
 
