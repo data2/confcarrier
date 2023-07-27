@@ -194,10 +194,11 @@ func main() {
 		Broadcast("exiting.")
 	}()
 
-	redisAddr := "localhost:6379"
+	redisAddr := "47.100.76.173:6379"
 	//redisAddr := os.Args[3]
 	rdb := redis.NewClient(&redis.Options{
 		Addr: redisAddr,
+		Password: "4Utzy0d5p1IXeght",
 	})
 	pong, err := rdb.Ping().Result()
 	if err != nil {
