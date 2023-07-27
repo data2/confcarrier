@@ -165,7 +165,7 @@ func main() {
 	fmt.Println("tcp server started!")
 
 	//dsn := os.Args[2]
-	dsn := "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "ssp-app:2aGkj^Ac5c#*hZ!4@tcp(106.14.71.115:3306)/nmy-db?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err = gorm.Open(mysql.New(mysql.Config{
 		DSN:                       dsn,   // DSN data source name
 		DefaultStringSize:         256,   // string 类型字段的默认长度
