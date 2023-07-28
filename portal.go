@@ -12,7 +12,7 @@ import (
 var httpDb *gorm.DB
 var httpRdb *redis.Client
 
-func HTTPGet(w http.ResponseWriter, r *http.Request) {
+func HttpGet(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	namespace := parseParam(r, "namespace")
 	path := parseParam(r, "path")
@@ -44,7 +44,7 @@ func parseParam(r *http.Request, key string) string {
 	}
 }
 
-func HTTPGetAll(w http.ResponseWriter, r *http.Request) {
+func HttpGetAll(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	namespace := parseParam(r, "namespace")
 

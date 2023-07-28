@@ -22,12 +22,65 @@ type ConnMeta struct {
 var clientMeta sync.Map
 var pushQueue sync.Map
 var queueMu sync.Mutex
+var db *gorm.DB
 
-// @description delete carrier
 func RemoveCarrier(conn *net.TCPConn) {
 	clientMeta.Delete(conn)
 	pushQueue.Delete(conn)
 	fmt.Println(fmt.Sprintf("delete client [%s] conn", conn.RemoteAddr()))
+}
+
+func Broadcast(message string) {
+	clientMeta.Range(func(key, value interface{}) bool {
+		c := key.(*net.TCPConn)
+		c.Write([]byte(message))
+		c.Close()
+		return true
+	})
+}
+
+func Push(namespace string, conn *net.TCPConn) {
+	defer queueMu.Unlock()
+	queueMu.Lock()
+	val, _ := pushQueue.Load(namespace)
+	if val == nil {
+		subQueue := list.New()
+		subQueue.PushFront(conn)
+		pushQueue.Store(namespace, subQueue)
+	} else {
+		val.(*list.List).PushFront(conn)
+	}
+}
+
+// @description auth token
+func AuthToken(namespace string, token string) bool {
+	if token == md5go(namespace+"666") {
+		return true
+	}
+	return false
+}
+
+func RegistClient(conn *net.TCPConn, namespace string, token string) bool {
+	bol := AuthToken(namespace, token)
+	fmt.Println(bol)
+	if bol {
+		clientMeta.Store(conn, ConnMeta{
+			RemoteAddr:  conn.RemoteAddr().String(),
+			AuthOkToken: token,
+			Namespace:   namespace,
+		})
+		Push(namespace, conn)
+		return true
+	}
+	return false
+}
+
+func ValidCheck(conn *net.TCPConn, namespace string, token string) bool {
+	value, _ := clientMeta.Load(conn)
+	if value == nil {
+		return RegistClient(conn, namespace, token)
+	}
+	return value.(ConnMeta).AuthOkToken == token
 }
 
 func HandlerClient(db *gorm.DB, conn *net.TCPConn) {
@@ -73,81 +126,26 @@ func HandlerClient(db *gorm.DB, conn *net.TCPConn) {
 				continue
 			}
 			LoadData(db, namespace, info[3]).Return(conn, info[2])
-		// case SET:
-		// 	if len(info) != 5 {
-		// 		Response{Code: FAIL, Message: "req param valid, get must contain namespace|token|action|path|value"}.Return(conn, info[2])
-		// 		continue
-		// 	}
-		// 	SetData(db, namespace, info[3], info[4]).Return(conn, info[2])
-		// case DEL:
-		// 	if len(info) != 4 {
-		// 		Response{Code: FAIL, Message: "req param valid, get must contain namespace|token|action|path"}.Return(conn, info[2])
-		// 		continue
-		// 	}
-		// 	DelData(db, namespace, info[3]).Return(conn, info[2])
-		// case DELALL:
-		// 	DelAllData(db, namespace).Return(conn, info[2])
-		// }
+			// case SET:
+			// 	if len(info) != 5 {
+			// 		Response{Code: FAIL, Message: "req param valid, get must contain namespace|token|action|path|value"}.Return(conn, info[2])
+			// 		continue
+			// 	}
+			// 	SetData(db, namespace, info[3], info[4]).Return(conn, info[2])
+			// case DEL:
+			// 	if len(info) != 4 {
+			// 		Response{Code: FAIL, Message: "req param valid, get must contain namespace|token|action|path"}.Return(conn, info[2])
+			// 		continue
+			// 	}
+			// 	DelData(db, namespace, info[3]).Return(conn, info[2])
+			// case DELALL:
+			// 	DelAllData(db, namespace).Return(conn, info[2])
+			// }
+		}
 	}
 }
-
-func RegistClient(conn *net.TCPConn, namespace string, token string) bool {
-	bol := AuthToken(namespace, token)
-	fmt.Println(bol)
-	if bol {
-		clientMeta.Store(conn, ConnMeta{
-			RemoteAddr:  conn.RemoteAddr().String(),
-			AuthOkToken: token,
-			Namespace:   namespace,
-		})
-		Push(namespace, conn)
-		return true
-	}
-	return false
-}
-
-func Push(namespace string, conn *net.TCPConn) {
-	defer queueMu.Unlock()
-	queueMu.Lock()
-	val, _ := pushQueue.Load(namespace)
-	if val == nil {
-		subQueue := list.New()
-		subQueue.PushFront(conn)
-		pushQueue.Store(namespace, subQueue)
-	} else {
-		val.(*list.List).PushFront(conn)
-	}
-}
-
-// @description auth token
-func AuthToken(namespace string, token string) bool {
-	if token == md5go(namespace+"666") {
-		return true
-	} 
-	return false
-}
-
-func ValidCheck(conn *net.TCPConn, namespace string, token string) bool {
-	value, _ := clientMeta.Load(conn)
-	if value == nil {
-		return RegistClient(conn, namespace, token)
-	}
-	return value.(ConnMeta).AuthOkToken == token
-}
-
-func Broadcast(s string) {
-	clientMeta.Range(func(key, value interface{}) bool {
-		c := key.(*net.TCPConn)
-		c.Write([]byte(s))
-		c.Close()
-		return true
-	})
-}
-
-var db *gorm.DB
 
 func main() {
-	fmt.Println("----------------------------------------------------")
 	fmt.Println("confcarrier starting...")
 	port := "8086"
 	//port := os.Args[1]
@@ -197,7 +195,7 @@ func main() {
 	redisAddr := "47.100.76.173:6379"
 	//redisAddr := os.Args[3]
 	rdb := redis.NewClient(&redis.Options{
-		Addr: redisAddr,
+		Addr:     redisAddr,
 		Password: "4Utzy0d5p1IXeght",
 	})
 	pong, err := rdb.Ping().Result()
@@ -218,6 +216,4 @@ func main() {
 		fmt.Println(fmt.Sprintf("accpet request from client [%s] ok, join carrier ok", conn.RemoteAddr().String()))
 		go HandlerClient(db, conn)
 	}
-
-	//go run carrier.go  util.go db.go queue.go 8086  "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8mb4&parseTime=True&loc=Local" "localhost:6379"
 }

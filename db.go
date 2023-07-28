@@ -10,13 +10,13 @@ import (
 
 const (
 	// @description http get
-	GET    = "get"
+	GET = "get"
 	// @description http getall
 	GETALL = "getall"
 	// @description http set
-	SET    = "set"
+	SET = "set"
 	// @description http del
-	DEL    = "del"
+	DEL = "del"
 	// @description http  delall
 	DELALL = "delall"
 	// @description http notify
@@ -31,7 +31,7 @@ type Response struct {
 }
 
 type Record struct {
-	ID        string `gorm:"primaryKey"`
+	Id        string `gorm:"primaryKey"`
 	Namespace string
 	Path      string
 	Value     string
@@ -79,7 +79,7 @@ func SetData(db *gorm.DB, namespace string, path string, value string) Response 
 		}
 	} else {
 		uid, _ := uuid.NewUUID()
-		record = Record{Namespace: namespace, ID: uid.String(), Path: path, Value: value}
+		record = Record{Namespace: namespace, Id: uid.String(), Path: path, Value: value}
 		err = db.Create(&record).Error
 		if err != nil {
 			fmt.Println("set data fail > " + err.Error())
@@ -91,7 +91,9 @@ func SetData(db *gorm.DB, namespace string, path string, value string) Response 
 
 func LoadData(db *gorm.DB, namespace string, path string) Response {
 	var record Record
-	err := db.Where("namespace = ? and path = ?", namespace, path).Find(&record).Error
+	fmt.Println(namespace + "," + path)
+	err := db.Where("Namespace = ? and path = ?", namespace, path).Find(&record).Error
+	fmt.Println(record)
 	if err != nil {
 		return Response{Code: FAIL, Message: err.Error()}
 	}
@@ -105,7 +107,6 @@ func DelAllData(db *gorm.DB, namespace string) Response {
 	}
 	return Response{Code: SUCCESS}
 }
-
 
 // @description LoadAllData
 func LoadAllData(db *gorm.DB, namespace string) Response {
