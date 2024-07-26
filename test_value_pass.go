@@ -1,3 +1,4 @@
+// @description package main
 package main
 
 import (

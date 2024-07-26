@@ -48,5 +48,6 @@ func OnMessageRectived(conn *net.TCPConn) {
 
 func main() {
 	CreateSocket()
-	// test|fbb2b408b46ae729f4896f41f79ec758|getall
+	// namespace|b84b91beeb83bf0818bdfd9f7333f731|get|path.test
+	// namespace|token|action|path
 }

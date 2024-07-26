@@ -130,6 +130,7 @@ func HttpDelAll(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(ToJsonString(response)))
 }
 
+// @description http server
 func HttpServer(httpPort string) {
 	http.HandleFunc("/get", HttpGet)
 	http.HandleFunc("/getall", HttpGetAll)

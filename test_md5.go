@@ -1,6 +1,8 @@
+// @description package main
 package main
 
-//
-//func main()  {
-//	fmt.Println(md5go("test666"))
-//}
+import "fmt"
+
+func main() {
+	fmt.Println(md5go("namespace"))
+}
